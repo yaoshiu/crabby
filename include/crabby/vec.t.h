@@ -5,7 +5,7 @@
 
 #ifndef T
 #define T int
-#endif // T
+#endif
 
 #define CRABBY_VEC_DEFAULT_CAP 4
 #define CRABBY_VEC_OOM "crabby/vec: out of memory"
@@ -55,7 +55,9 @@ static inline void vec_drop(T, Vec(T) self) {
   free(self.data);
 }
 #define vec_reserve_exact(T, self, n) TEMPLATE(vec_reserve_exact, T, self, n)
-static inline void vec_reserve_exact(T, Vec(T) * self, size_t n) {}
+static inline void vec_reserve_exact(T, Vec(T) * self, size_t additional) {
+
+}
 
 #ifndef CRABBY_NO_UNDEF_T
 
@@ -63,6 +65,6 @@ static inline void vec_reserve_exact(T, Vec(T) * self, size_t n) {}
 
 #ifdef T_DROP
 #undef T_DROP
-#endif // T_DROP
+#endif
 
-#endif // CRABBY_NO_UNDEF_T
+#endif
