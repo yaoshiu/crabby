@@ -1,7 +1,6 @@
+#include "numbers.h"
 #include "utilities.h"
 #include <stdckdint.h>
-#include <stddef.h>
-#include <stdlib.h>
 
 #ifndef T
 #define T int
@@ -23,22 +22,23 @@ static inline Vec(T) vec_new(T) {
   return (Vec(T)){.len = 0, .cap = 0, .data = NULL};
 }
 
-#define vec_with_capacity(T, cap) TRACK(vec_with_capacity, T, cap)
-#define vec_with_capacity_(...) TEMPLATE(vec_with_capacity, __VA_ARGS__)
-static inline Vec(T)
-    vec_with_capacity_(T, size_t cap, const char *file, int line) {
+#define vec_with_capacity(T, capacity)                                         \
+  TRACK_CALL(_vec_with_capacity_track, T, capacity)
+#define _vec_with_capacity_track(T, capacity)                                  \
+  TRACK(_vec_with_capacity_track, T, capacity)
+static inline Vec(T) _vec_with_capacity_track(T, usize cap) {
   if (cap == 0) {
     return vec_new(T);
   }
 
-  size_t cap_byte;
-  if (ckd_mul(&cap_byte, cap, sizeof(T))) {
-    panic_track(CRABBY_VEC_CAP_OVERFLOW, file, line);
+  Option(usize) cap_byte = checked_mul(usize, cap, sizeof(T));
+  if (option_is_none(usize, &cap_byte)) {
+    panic_track(CRABBY_VEC_CAP_OVERFLOW);
   }
 
-  T *data = (T *)malloc(cap_byte);
+  T *data = (T *)malloc(cap_byte.val);
   if (data == NULL) {
-    panic_track(CRABBY_VEC_OOM, file, line);
+    panic_track(CRABBY_VEC_OOM);
   }
 
   return (Vec(T)){.len = 0, .cap = cap, .data = data};
@@ -47,16 +47,64 @@ static inline Vec(T)
 #define vec_drop(T, self) TEMPLATE(vec_drop, T, self)
 static inline void vec_drop(T, Vec(T) self) {
 #ifdef T_DROP
-  for (size_t i = 0; i < self.len; i++) {
+  for (usize i = 0; i < self.len; i++) {
     T_DROP(self.data[i]);
   }
 #endif
-
   free(self.data);
 }
-#define vec_reserve_exact(T, self, n) TEMPLATE(vec_reserve_exact, T, self, n)
-static inline void vec_reserve_exact(T, Vec(T) * self, size_t additional) {
 
+#define vec_reserve_exact(T, self, additional)                                 \
+  TRACK_CALL(_vec_reserve_exact_track, T, self, additional)
+#define _vec_reserve_exact_track(T, self, additional)                          \
+  TRACK(_vec_reserve_exact_track, T, self, additional)
+static inline void _vec_reserve_exact_track(T, Vec(T) * self,
+                                            usize additional) {
+  Option(usize) required = checked_add(usize, self->len, additional);
+  if (option_is_none(usize, &required)) {
+    panic_track(CRABBY_VEC_CAP_OVERFLOW);
+  }
+
+  if (required.val <= self->cap) {
+    return;
+  }
+
+  Option(usize) required_byte = checked_mul(usize, required.val, sizeof(T));
+  if (option_is_none(usize, &required_byte)) {
+    panic_track(CRABBY_VEC_CAP_OVERFLOW);
+  }
+
+  T *data = realloc(self->data, required_byte.val);
+  if (data == NULL) {
+    panic_track(CRABBY_VEC_OOM);
+  }
+
+  self->cap = required.val;
+  self->data = data;
+}
+
+#define vec_reserve(T, self, additional)                                       \
+  TRACK_CALL(_vec_reserve_track, T, self, additional)
+#define _vec_reserve_track(T, self, additional)                                \
+  TRACK(_vec_reserve_track, T, self, additional)
+static inline void _vec_reserve_track(T, Vec(T) * self, usize additional) {
+  Option(usize) required = checked_add(usize, self->len, additional);
+  if (option_is_none(usize, &required)) {
+    panic_track(CRABBY_VEC_CAP_OVERFLOW);
+  }
+
+  if (required.val <= self->cap) {
+    return;
+  }
+
+  Option(usize) double_cap = checked_mul(usize, self->cap, 2);
+  if (option_is_none(usize, &double_cap)) {
+    panic_track(CRABBY_VEC_CAP_OVERFLOW);
+  }
+
+  usize add = max(usize, self->cap, required.val) - self->len;
+
+  CONCAT(_vec_reserve_exact_track, T)(self, add, file, line);
 }
 
 #ifndef CRABBY_NO_UNDEF_T

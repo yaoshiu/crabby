@@ -8,3 +8,4 @@ file(GLOB
   src/*.c
 )
 add_executable(test ${SRC})
+target_include_directories(test PUBLIC include)
