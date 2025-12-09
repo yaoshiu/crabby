@@ -1,6 +1,5 @@
 #include "numbers.h"
 #include "utilities.h"
-#include <stdckdint.h>
 
 #ifndef T
 #define T int
@@ -102,7 +101,7 @@ static inline void _vec_reserve_track(T, Vec(T) * self, usize additional) {
     panic_track(CRABBY_VEC_CAP_OVERFLOW);
   }
 
-  usize add = max(usize, self->cap, required.val) - self->len;
+  usize add = max(usize, double_cap.val, required.val) - self->len;
 
   CONCAT(_vec_reserve_exact_track, T)(self, add, file, line);
 }
