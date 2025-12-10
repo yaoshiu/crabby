@@ -23,9 +23,9 @@ typedef struct {
 
 #define Self Option(T)
 
-#define option_some(T, val) TEMPLATE(option_some, T, val)
-static inline Self option_some(T, T val) {
-  return (Self){.tag = Some, .val = val};
+#define option_some(T, value) TEMPLATE(option_some, T, value)
+static inline Self option_some(T, T value) {
+  return (Self){.tag = Some, .val = value};
 }
 
 #define option_none(T) TEMPLATE(option_none, T)
@@ -41,9 +41,9 @@ static inline T _option_unwrap(T, Self self) {
   return self.val;
 }
 
-#define option_unwrap_or(T, self, val) TEMPLATE(option_unwrap_or, T, self, val)
-static inline T option_unwrap_or(T, Self self, T val) {
-  return self.tag == Some ? self.val : val;
+#define option_unwrap_or(T, self, value) TEMPLATE(option_unwrap_or, T, self, value)
+static inline T option_unwrap_or(T, Self self, T value) {
+  return self.tag == Some ? self.val : value;
 }
 
 #define option_is_some(T, self) TEMPLATE(option_is_some, T, self)
