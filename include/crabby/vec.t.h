@@ -4,13 +4,6 @@
 
 #ifndef T
 #define T int
-#endif
-
-#ifndef CRABBY_NO_UNDEF_T
-#define CRABBY_NO_UNDEF_T
-#include "option.t.h"
-#undef CRABBY_NO_UNDEF_T
-#else
 #include "option.t.h"
 #endif
 
@@ -134,8 +127,9 @@ static inline Option(T) vec_pop(T, Self *self) {
 #ifdef T_CLONE
 static inline Self _vec_clone(T, const Self *self) {
   Self clone = CONCAT(_vec_with_capacity, T)(self->cap, _file, _line);
+  clone.len = self->len;
   for (usize i = 0; i < self->len; i++) {
-    clone->data[i] = T_CLONE(&self->data[i]);
+    clone.data[i] = T_CLONE(&self->data[i]);
   }
   return clone;
 }
@@ -143,19 +137,11 @@ static inline Self _vec_clone(T, const Self *self) {
 #else
 static inline Self _vec_clone(T, const Self *self) {
   Self clone = CONCAT(_vec_with_capacity, T)(self->cap, _file, _line);
-  memcpy(clone.data, self->data, self->len);
+  clone.len = self->len;
+  // since `self->cap` does not overflow, we assume that this is okay
+  memcpy(clone.data, self->data, self->len * sizeof(T));
   return clone;
 }
 #endif
 
 #undef Self
-
-#ifndef CRABBY_NO_UNDEF_T
-
-#undef T
-
-#ifdef T_DROP
-#undef T_DROP
-#endif
-
-#endif

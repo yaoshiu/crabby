@@ -80,7 +80,7 @@ static inline T _option_expect(T, Self self, const char *message) {
 #ifdef T_DROP
 #ifdef T_CLONE
 static inline Self option_clone(T, const Self *self) {
-  return self->tag == Some ? option_some(T, T_CLONE(self->val))
+  return self->tag == Some ? option_some(T, T_CLONE(&self->val))
                            : option_none(T);
 }
 #endif
@@ -89,17 +89,3 @@ static inline Self option_clone(T, const Self *self) { return *self; }
 #endif
 
 #undef Self
-
-#ifndef CRABBY_NO_UNDEF_T
-
-#undef T
-
-#ifdef T_DROP
-#undef T_DROP
-#endif
-
-#ifdef T_CLONE
-#undef T_CLONE
-#endif
-
-#endif
