@@ -1,5 +1,6 @@
 #include "numbers.h"
 #include "utilities.h"
+#include <string.h>
 
 #ifndef T
 #define T int
@@ -126,6 +127,26 @@ static inline Option(T) vec_pop(T, Self *self) {
   return self->len == 0 ? option_none(T)
                         : option_some(T, self->data[--self->len]);
 }
+
+#define vec_clone(T, self) TRACK_CALL(_vec_clone, T, self)
+#define _vec_clone(T, self) TRACK(_vec_clone, T, self)
+#ifdef T_DROP
+#ifdef T_CLONE
+static inline Self _vec_clone(T, const Self *self) {
+  Self clone = CONCAT(_vec_with_capacity, T)(self->cap, _file, _line);
+  for (usize i = 0; i < self->len; i++) {
+    clone->data[i] = T_CLONE(&self->data[i]);
+  }
+  return clone;
+}
+#endif
+#else
+static inline Self _vec_clone(T, const Self *self) {
+  Self clone = CONCAT(_vec_with_capacity, T)(self->cap, _file, _line);
+  memcpy(clone.data, self->data, self->len);
+  return clone;
+}
+#endif
 
 #undef Self
 
