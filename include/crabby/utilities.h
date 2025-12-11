@@ -9,7 +9,7 @@
 
 #define TEMPLATE(func, type, ...) CONCAT(func, type)(__VA_ARGS__)
 
-#define TRACK_CALL(func, type, ...)                                            \
+#define TRACK_CALLER(func, type, ...)                                          \
   CONCAT(func, type)(__VA_ARGS__, __FILE__, __LINE__)
 
 #define TRACK(func, type, ...)                                                 \
@@ -28,7 +28,7 @@ static inline const char *current_thread_name() {
 #define panic_track(message) _panic_track(message, _file, _line)
 static inline void _panic_track(const char *message, const char *file,
                                 int line) {
-  fprintf(stderr, "crabby: thread `%s` panicked at `%s`, %s:%d\n",
+  fprintf(stderr, "crabby: thread '%s' panicked at '%s', %s:%d\n",
           current_thread_name(), message, file, line);
   abort();
 }

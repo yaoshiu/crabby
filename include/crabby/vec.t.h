@@ -7,7 +7,6 @@
 #include "option.t.h"
 #endif
 
-#define CRABBY_VEC_DEFAULT_CAP 4
 #define CRABBY_VEC_OOM "crabby/vec: out of memory"
 #define CRABBY_VEC_CAP_OVERFLOW "crabby/vec: capacity overflow"
 
@@ -26,7 +25,7 @@ static inline Self vec_new(T) {
 }
 
 #define vec_with_capacity(T, capacity)                                         \
-  TRACK_CALL(_vec_with_capacity, T, capacity)
+  TRACK_CALLER(_vec_with_capacity, T, capacity)
 #define _vec_with_capacity(T, capacity) TRACK(_vec_with_capacity, T, capacity)
 static inline Self _vec_with_capacity(T, usize capacity) {
   if (capacity == 0) {
@@ -57,7 +56,7 @@ static inline void vec_drop(T, Self self) {
 }
 
 #define vec_reserve_exact(T, self, additional)                                 \
-  TRACK_CALL(_vec_reserve_exact, T, self, additional)
+  TRACK_CALLER(_vec_reserve_exact, T, self, additional)
 #define _vec_reserve_exact(T, self, additional)                                \
   TRACK(_vec_reserve_exact, T, self, additional)
 static inline void _vec_reserve_exact(T, Self *self, usize additional) {
@@ -85,7 +84,7 @@ static inline void _vec_reserve_exact(T, Self *self, usize additional) {
 }
 
 #define vec_reserve(T, self, additional)                                       \
-  TRACK_CALL(_vec_reserve, T, self, additional)
+  TRACK_CALLER(_vec_reserve, T, self, additional)
 #define _vec_reserve(T, self, additional)                                      \
   TRACK(_vec_reserve, T, self, additional)
 static inline void _vec_reserve(T, Self *self, usize additional) {
@@ -108,7 +107,7 @@ static inline void _vec_reserve(T, Self *self, usize additional) {
   CONCAT(_vec_reserve_exact, T)(self, add, _file, _line);
 }
 
-#define vec_push(T, self, value) TRACK_CALL(_vec_push, T, self, value)
+#define vec_push(T, self, value) TRACK_CALLER(_vec_push, T, self, value)
 #define _vec_push(T, self, value) TRACK(_vec_push, T, self, value)
 static inline void _vec_push(T, Self *self, T value) {
   CONCAT(_vec_reserve, T)(self, 1, _file, _line);
@@ -121,7 +120,7 @@ static inline Option(T) vec_pop(T, Self *self) {
                         : option_some(T, self->data[--self->len]);
 }
 
-#define vec_clone(T, self) TRACK_CALL(_vec_clone, T, self)
+#define vec_clone(T, self) TRACK_CALLER(_vec_clone, T, self)
 #define _vec_clone(T, self) TRACK(_vec_clone, T, self)
 #ifdef T_DROP
 #ifdef T_CLONE
@@ -143,5 +142,22 @@ static inline Self _vec_clone(T, const Self *self) {
   return clone;
 }
 #endif
+
+#define vec_from(T, s, len) TRACK_CALLER(_vec_from, T, s, len)
+#define _vec_from(T, s, len) TRACK(_vec_from, T, s, len)
+static inline Self _vec_from(T, T *s, usize len) {
+  Option(usize) capacity = checked_mul(usize, len, sizeof(T));
+  if (option_is_none(usize, &capacity)) {
+    panic_track(CRABBY_VEC_OOM);
+  }
+
+  T *data = (T *)malloc(capacity.val);
+  if (data == NULL) {
+    panic_track(CRABBY_VEC_OOM);
+  }
+  memcpy(data, s, capacity.val);
+
+  return (Self){.len = len, .cap = len, .data = data};
+}
 
 #undef Self

@@ -5,7 +5,8 @@
 #define T int
 #endif
 
-#define CRABBY_OPTION_NONE "crabby/option: unexpected 'None'"
+#define CRABBY_OPTION_NONE                                                     \
+  "crabby/option: called `option_unwrap` on a `None` value"
 
 #ifndef CRABBY_OPTION_TAG
 #define CRABBY_OPTION_TAG
@@ -31,7 +32,7 @@ static inline Self option_some(T, T value) {
 #define option_none(T) TEMPLATE(option_none, T)
 static inline Self option_none(T) { return (Self){.tag = None}; }
 
-#define option_unwrap(T, self) TRACK_CALL(_option_unwrap, T, self)
+#define option_unwrap(T, self) TRACK_CALLER(_option_unwrap, T, self)
 #define _option_unwrap(T, self) TRACK(_option_unwrap, T, self)
 static inline T _option_unwrap(T, Self self) {
   if (self.tag == None) {
@@ -41,7 +42,8 @@ static inline T _option_unwrap(T, Self self) {
   return self.val;
 }
 
-#define option_unwrap_or(T, self, value) TEMPLATE(option_unwrap_or, T, self, value)
+#define option_unwrap_or(T, self, value)                                       \
+  TEMPLATE(option_unwrap_or, T, self, value)
 static inline T option_unwrap_or(T, Self self, T value) {
   return self.tag == Some ? self.val : value;
 }
@@ -66,7 +68,7 @@ static inline void option_drop(T, Self self) {
 }
 
 #define option_expect(T, self, message)                                        \
-  TRACK_CALL(_option_expect, T, self, message)
+  TRACK_CALLER(_option_expect, T, self, message)
 #define _option_expect(T, self, message) TRACK(_option_expect, T, self, message)
 static inline T _option_expect(T, Self self, const char *message) {
   if (self.tag == None) {
