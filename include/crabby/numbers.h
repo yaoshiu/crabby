@@ -76,6 +76,9 @@ typedef size_t usize;
 #include "cmp.t.h"
 #undef T
 
+typedef float f32;
+typedef float f64;
+
 #undef CRABBY_NUMBER
 
 #endif

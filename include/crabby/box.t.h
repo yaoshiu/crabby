@@ -32,4 +32,18 @@ static inline void box_drop(T, Self self) {
   free(self.ptr);
 }
 
+#define box_clone(T, self) TRACK_CALLER(_box_clone, T, self)
+#define _box_clone(T, self) TRACK(_box_clone, T, self)
+#ifdef T_DROP
+#ifdef T_CLONE
+static inline Self _box_clone(T, const Self *self) {
+  return CONCAT(_box_new, T)(T_CLONE(self->ptr), _file, _line);
+}
+#endif
+#else
+static inline Self _box_clone(T, const Self *self) {
+  return CONCAT(_box_new, T)(*self->ptr, _file, _line);
+}
+#endif
+
 #undef Self

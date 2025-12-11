@@ -4,14 +4,18 @@
 
 #ifndef T
 #define T int
-#include "option.t.h"
 #endif
+
+typedef struct Option(T) Option(T);
+
+static Option(T) option_some(T, T val);
+static Option(T) option_none(T);
 
 #define CRABBY_VEC_OOM "crabby/vec: out of memory"
 #define CRABBY_VEC_CAP_OVERFLOW "crabby/vec: capacity overflow"
 
 #define Vec(T) CONCAT(Vec, T)
-typedef struct {
+typedef struct Vec(T) {
   size_t len;
   size_t cap;
   T *data;

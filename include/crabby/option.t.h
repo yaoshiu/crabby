@@ -17,7 +17,7 @@ typedef enum {
 #endif
 
 #define Option(T) CONCAT(Option, T)
-typedef struct {
+typedef struct Option(T) {
   OptionTag tag;
   T val;
 } Option(T);
